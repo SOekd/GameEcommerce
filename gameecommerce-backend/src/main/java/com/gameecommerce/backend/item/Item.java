@@ -20,7 +20,8 @@ public class Item {
     @Column(length = 4000)
     private String description;
 
-    private double price;
+    // in cents
+    private int price;
 
     private int stock;
 

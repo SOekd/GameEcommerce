@@ -1,16 +1,16 @@
 package com.gameecommerce.backend.user;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.gameecommerce.backend.history.History;
+import com.gameecommerce.backend.item.Item;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.UUID;
 
-@Entity
+@Entity(name = "users")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -22,8 +22,13 @@ public class User {
 
     private String name;
 
+    private String password;
+
     private String email;
 
     private String playerName;
+
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<Item> storage;
 
 }

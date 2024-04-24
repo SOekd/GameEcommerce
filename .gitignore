@@ -35,4 +35,10 @@ build/
 ### VS Code ###
 .vscode/
 
+### VUE ###
+**/node_modules/
+**/dist/
+npm-debug.log
+yarn-error.log
+
 !gradle-wrapper.jar

@@ -1,4 +1,8 @@
 package com.gameecommerce.backend.user;
 
-public class UserRepository {
+import org.springframework.data.repository.CrudRepository;
+
+import java.util.UUID;
+
+public interface UserRepository extends CrudRepository<User, UUID> {
 }

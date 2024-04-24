@@ -4,6 +4,6 @@ import org.jetbrains.annotations.NotNull;
 
 public interface UserService {
 
-    void save(@NotNull User user);
+    User create(@NotNull User user);
 
 }
