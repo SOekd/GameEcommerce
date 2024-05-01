@@ -1,6 +1,10 @@
+
 spring:
   application:
     name: GameEcommerce
+
+  profiles:
+    active: test
 
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect

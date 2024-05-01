@@ -28,7 +28,4 @@ public class User {
 
     private String playerName;
 
-    @OneToMany(fetch = FetchType.LAZY)
-    private List<Item> storage;
-
 }
