@@ -31,6 +31,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.jetbrains:annotations:24.1.0'
     implementation 'org.springframework.modulith:spring-modulith-starter-core'
+    implementation 'jakarta.validation:jakarta.validation-api:3.1.0-M2'
 
     compileOnly 'org.projectlombok:lombok'
 
