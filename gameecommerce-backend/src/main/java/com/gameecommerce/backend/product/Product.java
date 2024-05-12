@@ -1,9 +1,7 @@
 package com.gameecommerce.backend.product;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,16 +20,16 @@ public class Product {
     private Long id;
 
     @Column(unique = true)
-    @Min(4)
-    @Max(200)
+    @Size(min = 4, max = 200)
+    @NotNull
     private String name;
 
-    @Column(length = 4000)
-    @Min(5)
+    @Size(min = 5, max = 4000)
+    @NotNull
     private String description;
 
     // in cents
-    @Min(1000)
+    @PositiveOrZero
     private int price;
 
     @PositiveOrZero
@@ -43,6 +41,7 @@ public class Product {
     private String gameServer;
 
     @ElementCollection
+    @NotNull
     private List<String> commands;
 
 }

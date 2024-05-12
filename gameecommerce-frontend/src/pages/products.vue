@@ -1,11 +1,11 @@
 <template>
-  <h1>Produtos!</h1>
   <v-container fluid>
+    <h1>Produtos!</h1>
     <v-data-table
       :headers="headers"
       :items="products"
       :loading="loading"
-      :sort-by="[{key: 'id', direction: 'asc'}]"
+      show-expand
     >
 
       <template v-slot:loading>
@@ -17,18 +17,89 @@
           <v-toolbar-title>Produtos</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-btn class="mx-2"
+                 v-if="!mobile"
                  :disabled="loading"
                  @click="fetchProducts"
-                 text="Recarregar"
+                 text="Atualizar"
                  variant="flat"
                  append-icon="mdi-refresh">
           </v-btn>
-          <v-btn color="success"
-                 variant="outlined"
-                 text="Criar Produto"
-                 append-icon="mdi-plus">
+          <v-btn v-else
+                 :disabled="loading"
+                 @click="fetchProducts"
+                 variant="elevated"
+                 size="small"
+                 icon="mdi-refresh"
+          >
+
           </v-btn>
+          <create-dialog v-slot:default="{ props: activatorProps }" @create="fetchProducts">
+            <v-btn
+              v-if="!mobile"
+              color="success"
+              variant="outlined"
+              text="Criar Produto"
+              append-icon="mdi-plus"
+              v-bind="activatorProps"
+            ></v-btn>
+            <v-btn
+              v-else
+              color="success"
+              text="Criar Produto"
+              variant="outlined"
+              size="small"
+              icon="mdi-plus"
+              v-bind="activatorProps">
+            </v-btn>
+          </create-dialog>
         </v-toolbar>
+      </template>
+
+      <template v-slot:expanded-row="{ columns, item }">
+        <tr>
+          <td :colspan="columns.length" class="text-body-1">
+            {{ item.description }}
+          </td>
+        </tr>
+      </template>
+
+      <template v-slot:item.actions="{ item }">
+
+       <v-container>
+         <v-row>
+           <v-col cols="3">
+             <edit-dialog v-slot:default="{ props: activatorProps }" @remove="fetchProducts">
+               <v-btn icon class="mx-2" size="small" variant="flat" v-bind="activatorProps">
+                 <v-icon
+                   size="small">
+                   mdi-pencil
+                 </v-icon>
+                 <v-tooltip
+                   activator="parent"
+                   location="top"
+                 >Editar
+                 </v-tooltip>
+               </v-btn>
+             </edit-dialog>
+           </v-col>
+           <v-col cols="3">
+             <remove-dialog v-slot:default="{ props: activatorProps }" @remove="fetchProducts">
+               <v-btn icon class="mx-2" size="small" variant="flat" v-bind="activatorProps">
+                 <v-icon
+                   size="small">
+                   mdi-delete
+                 </v-icon>
+                 <v-tooltip
+                   activator="parent"
+                   location="top"
+                 >Remover
+                 </v-tooltip>
+               </v-btn>
+             </remove-dialog>
+           </v-col>
+         </v-row>
+       </v-container>
+
       </template>
 
     </v-data-table>
@@ -39,8 +110,13 @@
 
 // localhost:8080/api/products
 import {onMounted, ref} from 'vue'
-import axios from 'axios'
+import {useDisplay} from 'vuetify'
+import CreateDialog from "../components/products/create-dialog.vue";
+import EditDialog from "../components/products/edit-dialog.vue";
+import RemoveDialog from "../components/products/remove-dialog.vue";
+import httpService from "../api/HttpService";
 
+const {mobile} = useDisplay()
 const loading = ref(false)
 
 const headers = ref([
@@ -70,32 +146,23 @@ const headers = ref([
   },
   {
     title: 'ações',
-    align: 'start',
+    align: 'center',
     sortable: false,
     key: 'actions'
   }
 ])
 
 const products = ref([])
-//
-const apiBaseUrl = import.meta.env.VITE_API_URL
-//
+
 const fetchProducts = async () => {
-  try {
-    loading.value = true;
-    console.log("Buscando em:", `http://${apiBaseUrl}/api/v1/products`)
-    axios.get(`http://${apiBaseUrl}/api/v1/products`).then(response => {
-      console.log('Produtos:', response.data);
-      products.value = response.data;
-      loading.value = false;
-    }).catch(error => {
-      console.error('Erro CORS:', error);
-      loading.value = false;
-    });
-  } catch (error) {
+  httpService.get('products').then(response => {
+    loading.value = true
+    products.value = response.data;
+    loading.value = false
+  }).catch(error => {
     console.error('Erro ao buscar produtos:', error);
     loading.value = false;
-  }
+  });
 };
 
 
@@ -105,5 +172,5 @@ onMounted(fetchProducts)
 
 <route lang="yaml">
 meta:
-layout: dashboard
+  layout: dashboard
 </route>
