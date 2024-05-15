@@ -1,6 +1,6 @@
 <template>
   <v-container fluid>
-    <h1>Produtos!</h1>
+    <h1>Produtos</h1>
     <v-data-table
       :headers="headers"
       :items="products"
@@ -65,40 +65,40 @@
 
       <template v-slot:item.actions="{ item }">
 
-       <v-container>
-         <v-row>
-           <v-col cols="3">
-             <edit-dialog v-slot:default="{ props: activatorProps }" @remove="fetchProducts">
-               <v-btn icon class="mx-2" size="small" variant="flat" v-bind="activatorProps">
-                 <v-icon
-                   size="small">
-                   mdi-pencil
-                 </v-icon>
-                 <v-tooltip
-                   activator="parent"
-                   location="top"
-                 >Editar
-                 </v-tooltip>
-               </v-btn>
-             </edit-dialog>
-           </v-col>
-           <v-col cols="3">
-             <remove-dialog v-slot:default="{ props: activatorProps }" @remove="fetchProducts">
-               <v-btn icon class="mx-2" size="small" variant="flat" v-bind="activatorProps">
-                 <v-icon
-                   size="small">
-                   mdi-delete
-                 </v-icon>
-                 <v-tooltip
-                   activator="parent"
-                   location="top"
-                 >Remover
-                 </v-tooltip>
-               </v-btn>
-             </remove-dialog>
-           </v-col>
-         </v-row>
-       </v-container>
+        <v-container>
+          <v-row class="align-center justify-center">
+            <v-col cols="auto">
+              <edit-dialog v-slot:default="{ props: activatorProps }" @edit="fetchProducts" :product="item">
+                <v-btn icon class="mx-2" size="small" variant="flat" v-bind="activatorProps">
+                  <v-icon
+                    size="small">
+                    mdi-pencil
+                  </v-icon>
+                  <v-tooltip
+                    activator="parent"
+                    location="top"
+                  >Editar
+                  </v-tooltip>
+                </v-btn>
+              </edit-dialog>
+            </v-col>
+            <v-col cols="auto">
+              <remove-dialog v-slot:default="{ props: activatorProps }" @remove="fetchProducts" :product="item">
+                <v-btn icon size="small" variant="flat" v-bind="activatorProps" >
+                  <v-icon
+                    size="small">
+                    mdi-delete
+                  </v-icon>
+                  <v-tooltip
+                    activator="parent"
+                    location="top"
+                  >Remover
+                  </v-tooltip>
+                </v-btn>
+              </remove-dialog>
+            </v-col>
+          </v-row>
+        </v-container>
 
       </template>
 
@@ -155,8 +155,8 @@ const headers = ref([
 const products = ref([])
 
 const fetchProducts = async () => {
+  loading.value = true
   httpService.get('products').then(response => {
-    loading.value = true
     products.value = response.data;
     loading.value = false
   }).catch(error => {

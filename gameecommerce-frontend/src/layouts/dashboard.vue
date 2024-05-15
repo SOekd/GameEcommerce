@@ -34,6 +34,7 @@ const drawer = ref(null)
 
 const items = [
   { text: 'Inicio', icon: 'mdi-home', to: '/' },
-  { text: 'Produtos', icon: 'mdi-shopping', to: 'products' }
+  { text: 'Produtos', icon: 'mdi-shopping', to: 'products' },
+  { text: 'Usuários', icon: 'mdi-account-multiple', to: 'users' }
 ]
 </script>

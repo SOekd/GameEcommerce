@@ -40,7 +40,7 @@ public class Product {
     @Nullable
     private String gameServer;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @NotNull
     private List<String> commands;
 

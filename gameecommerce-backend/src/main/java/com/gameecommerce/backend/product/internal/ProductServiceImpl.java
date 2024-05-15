@@ -6,6 +6,7 @@ import com.gameecommerce.backend.product.ProductService;
 import com.gameecommerce.backend.product.exception.InvalidProductException;
 import com.gameecommerce.backend.product.exception.ProductNotFoundException;
 import lombok.AllArgsConstructor;
+import lombok.val;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
@@ -48,10 +49,9 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Product deleteById(@NotNull Long id) {
-        return productRepository.findById(id).map(product -> {
-            productRepository.deleteById(id);
-            return product;
-        }).orElseThrow(() -> new ProductNotFoundException("Product not found. Id: " + id));
+        val product = getById(id);
+        productRepository.deleteById(id);
+        return product;
     }
 
     @Override

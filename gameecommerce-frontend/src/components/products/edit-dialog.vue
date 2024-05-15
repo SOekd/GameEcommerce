@@ -1,5 +1,5 @@
 <template>
-  <div class="pa-4 text-center">
+  <div>
     <v-dialog
       v-model="dialog"
       max-width="600"
@@ -10,7 +10,7 @@
 
       <v-card
         prepend-icon="mdi-archive-plus"
-        title="Criar Produto"
+        :title="`Editar Produto - (${editingProduct.id}) ${editingProduct.name}`"
       >
 
         <v-form fast-fail @submit.prevent>
@@ -19,7 +19,7 @@
 
             <v-row cols="10">
               <v-alert
-                text="Responda os campos corretamente para criar um produto!"
+                text="Responda os campos corretamente para editar um produto!"
                 type="error"
                 border="start"
                 variant="elevated"
@@ -32,7 +32,7 @@
             <v-row>
               <v-col cols="12">
                 <v-text-field
-                  v-model="creatingProduct.name"
+                  v-model="editingProduct.name"
                   label="Nome"
                   :rules="nameRules"
                   variant="outlined"
@@ -44,7 +44,7 @@
             <v-row>
               <v-col cols="6">
                 <v-text-field
-                  v-model="creatingProduct.stock"
+                  v-model="editingProduct.stock"
                   label="Estoque"
                   :rules="stockRules"
                   type="number"
@@ -56,7 +56,7 @@
                 <v-text-field
                   :rules="priceRules"
                   type="number"
-                  v-model="creatingProduct.price"
+                  v-model="editingProduct.price"
                   label="Preço"
                   variant="outlined"
                 >
@@ -67,7 +67,7 @@
             <v-row>
               <v-col cols="12">
                 <v-textarea
-                  v-model="creatingProduct.description"
+                  v-model="editingProduct.description"
                   :rules="descriptionRules"
                   label="Descrição"
                   outlined
@@ -92,10 +92,10 @@
 
           <v-btn
             color="success"
-            text="Criar"
+            text="Salvar"
             :loading="loading"
             variant="flat"
-            @click="postProduct"
+            @click="editProduct"
           ></v-btn>
         </v-card-actions>
       </v-card>
@@ -107,7 +107,11 @@
 import {ref, reactive} from 'vue'
 import httpService from "@/api/HttpService";
 
-const emit = defineEmits(['create'])
+const emit = defineEmits(['edit'])
+
+const props = defineProps({
+  product: [Object, null]
+})
 
 const priceRules = ref([
   (v) => !!v || 'Preço é obrigatório',
@@ -134,33 +138,36 @@ const descriptionRules = ref([
   (v) => (v && v.length <= 4000) || 'Descrição deve ter no máximo 4000 caracteres',
 ])
 
-const creatingProduct = reactive({
-  name: '',
-  price: 0,
-  stock: 0,
-  description: ''
+
+const editingProduct = reactive({
+  id: props.product.id,
+  name: props.product.name,
+  price: props.product.price / 100,
+  stock: props.product.stock,
+  description: props.product.description
 })
 
 
 const dialog = ref(false)
 
 function clearProduct() {
-  creatingProduct.name = ''
-  creatingProduct.price = 0
-  creatingProduct.stock = 0
-  creatingProduct.description = ''
+  editingProduct.name = ''
+  editingProduct.price = 0
+  editingProduct.stock = 0
+  editingProduct.description = ''
 }
 
 const loading = ref(false)
 const alert = ref(false)
 
-function postProduct() {
+function editProduct() {
   loading.value = true
-  httpService.post('products', JSON.stringify({
-    name: creatingProduct.name,
-    price: (creatingProduct.price * 100).toFixed(0),
-    stock: creatingProduct.stock,
-    description: creatingProduct.description,
+  console.log("Editing Product: ", editingProduct)
+  httpService.put(`products/${editingProduct.id}`, JSON.stringify({
+    name: editingProduct.name,
+    price: (editingProduct.price * 100).toFixed(0),
+    stock: editingProduct.stock,
+    description: editingProduct.description,
     commands: []
   })).then(response => {
 
@@ -168,10 +175,9 @@ function postProduct() {
     dialog.value = false
     alert.value = false
     loading.value = false
-    emit('create')
+    emit('edit')
 
     clearProduct()
-
   })
     .catch(error => {
 
@@ -184,7 +190,3 @@ function postProduct() {
 }
 
 </script>
-
-<style scoped>
-
-</style>
