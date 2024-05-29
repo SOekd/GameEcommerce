@@ -111,10 +111,10 @@
 // localhost:8080/api/products
 import {onMounted, ref} from 'vue'
 import {useDisplay} from 'vuetify'
-import CreateDialog from "../components/products/create-dialog.vue";
-import EditDialog from "../components/products/edit-dialog.vue";
-import RemoveDialog from "../components/products/remove-dialog.vue";
-import httpService from "../api/HttpService";
+import CreateDialog from "../../components/products/create-product-dialog.vue";
+import EditDialog from "../../components/products/edit-product-dialog.vue";
+import RemoveDialog from "../../components/products/remove-product-dialog.vue";
+import httpService from "../../api/HttpService";
 
 const {mobile} = useDisplay()
 const loading = ref(false)
@@ -139,10 +139,10 @@ const headers = ref([
     key: 'price'
   },
   {
-    title: 'estoque',
+    title: 'servidor',
     align: 'start',
     sortable: true,
-    key: 'stock'
+    key: 'servers'
   },
   {
     title: 'ações',

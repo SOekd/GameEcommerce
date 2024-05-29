@@ -21,6 +21,7 @@ spring:
     username: user
     password: password
 
+order-expiration-minutes: 30
 
 cors:
   allowed-origins:

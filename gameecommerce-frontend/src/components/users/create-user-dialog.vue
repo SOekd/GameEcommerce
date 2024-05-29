@@ -165,7 +165,6 @@ function postUser() {
     emit('create')
 
     clearUser()
-
   })
     .catch(error => {
 

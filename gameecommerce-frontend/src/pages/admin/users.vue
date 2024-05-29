@@ -64,8 +64,8 @@
 
 import {onMounted, ref} from 'vue'
 import {useDisplay} from 'vuetify'
-import CreateUserDialog from "../components/users/create-user-dialog.vue";
-import httpService from "../api/HttpService";
+import CreateUserDialog from "../../components/users/create-user-dialog.vue";
+import httpService from "../../api/HttpService";
 
 const {mobile} = useDisplay()
 const loading = ref(false)

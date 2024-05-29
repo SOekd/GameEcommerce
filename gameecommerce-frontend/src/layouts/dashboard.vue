@@ -33,8 +33,9 @@ import {ref} from 'vue'
 const drawer = ref(null)
 
 const items = [
-  { text: 'Inicio', icon: 'mdi-home', to: '/' },
-  { text: 'Produtos', icon: 'mdi-shopping', to: 'products' },
-  { text: 'Usuários', icon: 'mdi-account-multiple', to: 'users' }
+  { text: 'Inicio', icon: 'mdi-home', to: 'admin' },
+  { text: 'Produtos', icon: 'mdi-shopping', to: 'admin/products' },
+  { text: 'Usuários', icon: 'mdi-account-multiple', to: 'admin/users' },
+  { text: 'Gerar Compra', icon: 'mdi-cart-variant', to: 'admin/buy' }
 ]
 </script>

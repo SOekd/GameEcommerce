@@ -32,16 +32,10 @@ public class Product {
     @PositiveOrZero
     private int price;
 
-    @PositiveOrZero
-    private int stock;
-
     private byte[] image;
-
-    @Nullable
-    private String gameServer;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @NotNull
-    private List<String> commands;
+    private List<String> servers;
 
 }

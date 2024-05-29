@@ -1,4 +1,4 @@
-package com.gameecommerce.backend.cupon;
+package com.gameecommerce.backend.coupon;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

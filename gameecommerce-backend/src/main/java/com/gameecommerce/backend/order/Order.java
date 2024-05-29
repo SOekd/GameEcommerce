@@ -1,28 +1,32 @@
 package com.gameecommerce.backend.order;
 
-import com.gameecommerce.backend.cupon.Coupon;
+import com.gameecommerce.backend.coupon.Coupon;
 import com.gameecommerce.backend.product.Product;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Entity(name = "orders")
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
+@Builder
 public class Order {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne
-    private Product product;
+    @ManyToMany(fetch = FetchType.EAGER)
+    private List<OrderProduct> products;
 
     @Enumerated(EnumType.STRING)
     private OrderStage orderStage;
@@ -32,14 +36,20 @@ public class Order {
     @CreationTimestamp
     private LocalDateTime creation;
 
-    @ManyToOne
+    private LocalDateTime expiration;
+
+    @ManyToOne(fetch = FetchType.EAGER)
     private Coupon coupon;
 
     // promotion codes
+    @PositiveOrZero
     private int price;
 
-    private int quantity;
+    @PositiveOrZero
+    private int discount;
 
-    private int total;
+    public int getTotalPrice() {
+        return price - discount;
+    }
 
 }

@@ -42,17 +42,7 @@
             </v-row>
 
             <v-row>
-              <v-col cols="6">
-                <v-text-field
-                  v-model="editingProduct.stock"
-                  label="Estoque"
-                  :rules="stockRules"
-                  type="number"
-                  variant="outlined"
-                ></v-text-field>
-              </v-col>
-
-              <v-col cols="6">
+              <v-col cols="12">
                 <v-text-field
                   :rules="priceRules"
                   type="number"
@@ -61,6 +51,27 @@
                   variant="outlined"
                 >
                 </v-text-field>
+              </v-col>
+            </v-row>
+
+            <v-row>
+              <v-col cols="12">
+                <v-combobox
+                  :hide-no-data="false"
+                  v-model="editingProduct.servers"
+                  label="Servidores"
+                  hide-selected
+                  multiple
+                  small-chips
+                >
+                  <template v-slot:no-data>
+                    <v-list-item>
+                      <v-list-item-title>
+                        Precione <kbd>enter</kbd> para adicionar um novo item
+                      </v-list-item-title>
+                    </v-list-item>
+                  </template>
+                </v-combobox>
               </v-col>
             </v-row>
 
@@ -104,7 +115,7 @@
 </template>
 
 <script setup>
-import {ref, reactive} from 'vue'
+import {ref, reactive, toRaw} from 'vue'
 import httpService from "@/api/HttpService";
 
 const emit = defineEmits(['edit'])
@@ -125,36 +136,27 @@ const nameRules = ref([
   (v) => (v && v.length <= 200) || 'Nome deve ter no máximo 200 caracteres',
 ])
 
-const stockRules = ref([
-  (v) => !!v || 'Estoque é obrigatório',
-  v => /^\d+$/.test(v) || 'Apenas números inteiros são permitidos',
-  (v) => (v && v >= 0) || 'Estoque deve ser maior ou igual a 0',
-  (v) => (v && v <= 999999999) || 'Estoque deve ser menor ou igual a 999999999'
-])
-
 const descriptionRules = ref([
   (v) => !!v || 'Descrição é obrigatória',
   (v) => (v && v.length >= 5) || 'Descrição deve ter no mínimo 5 caracteres.',
   (v) => (v && v.length <= 4000) || 'Descrição deve ter no máximo 4000 caracteres',
 ])
 
-
 const editingProduct = reactive({
   id: props.product.id,
   name: props.product.name,
   price: props.product.price / 100,
-  stock: props.product.stock,
-  description: props.product.description
+  description: props.product.description,
+  servers: props.product.servers
 })
-
 
 const dialog = ref(false)
 
 function clearProduct() {
   editingProduct.name = ''
   editingProduct.price = 0
-  editingProduct.stock = 0
   editingProduct.description = ''
+  editingProduct.servers = []
 }
 
 const loading = ref(false)
@@ -163,12 +165,18 @@ const alert = ref(false)
 function editProduct() {
   loading.value = true
   console.log("Editing Product: ", editingProduct)
+  console.log("Editing Product2: ", JSON.stringify({
+    name: editingProduct.name,
+    price: (editingProduct.price * 100).toFixed(0),
+    description: editingProduct.description,
+    servers: toRaw(editingProduct.servers)
+  }))
+
   httpService.put(`products/${editingProduct.id}`, JSON.stringify({
     name: editingProduct.name,
     price: (editingProduct.price * 100).toFixed(0),
-    stock: editingProduct.stock,
     description: editingProduct.description,
-    commands: []
+    servers: editingProduct.servers
   })).then(response => {
 
     console.log("Response: ", response)

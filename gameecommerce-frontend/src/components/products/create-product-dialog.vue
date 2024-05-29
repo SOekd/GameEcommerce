@@ -42,17 +42,7 @@
             </v-row>
 
             <v-row>
-              <v-col cols="6">
-                <v-text-field
-                  v-model="creatingProduct.stock"
-                  label="Estoque"
-                  :rules="stockRules"
-                  type="number"
-                  variant="outlined"
-                ></v-text-field>
-              </v-col>
-
-              <v-col cols="6">
+              <v-col cols="12">
                 <v-text-field
                   :rules="priceRules"
                   type="number"
@@ -61,6 +51,28 @@
                   variant="outlined"
                 >
                 </v-text-field>
+              </v-col>
+
+            </v-row>
+
+            <v-row>
+              <v-col cols="12">
+                <v-combobox
+                  :hide-no-data="false"
+                  v-model="creatingProduct.servers"
+                  label="Servidores"
+                  hide-selected
+                  multiple
+                  small-chips
+                >
+                  <template v-slot:no-data>
+                    <v-list-item>
+                      <v-list-item-title>
+                        Precione <kbd>enter</kbd> para adicionar um novo item
+                      </v-list-item-title>
+                    </v-list-item>
+                  </template>
+                </v-combobox>
               </v-col>
             </v-row>
 
@@ -121,13 +133,6 @@ const nameRules = ref([
   (v) => (v && v.length <= 200) || 'Nome deve ter no máximo 200 caracteres',
 ])
 
-const stockRules = ref([
-  (v) => !!v || 'Estoque é obrigatório',
-  v => /^\d+$/.test(v) || 'Apenas números inteiros são permitidos',
-  (v) => (v && v >= 0) || 'Estoque deve ser maior ou igual a 0',
-  (v) => (v && v <= 999999999) || 'Estoque deve ser menor ou igual a 999999999'
-])
-
 const descriptionRules = ref([
   (v) => !!v || 'Descrição é obrigatória',
   (v) => (v && v.length >= 5) || 'Descrição deve ter no mínimo 5 caracteres.',
@@ -137,8 +142,8 @@ const descriptionRules = ref([
 const creatingProduct = reactive({
   name: '',
   price: 0,
-  stock: 0,
-  description: ''
+  description: '',
+  servers: []
 })
 
 
@@ -147,8 +152,8 @@ const dialog = ref(false)
 function clearProduct() {
   creatingProduct.name = ''
   creatingProduct.price = 0
-  creatingProduct.stock = 0
   creatingProduct.description = ''
+  creatingProduct.servers = []
 }
 
 const loading = ref(false)
@@ -159,9 +164,8 @@ function postProduct() {
   httpService.post('products', JSON.stringify({
     name: creatingProduct.name,
     price: (creatingProduct.price * 100).toFixed(0),
-    stock: creatingProduct.stock,
     description: creatingProduct.description,
-    commands: []
+    servers: creatingProduct.servers
   })).then(response => {
 
     console.log("Response: ", response)
@@ -180,7 +184,6 @@ function postProduct() {
       alert.value = true
 
     })
-
 }
 
 </script>
