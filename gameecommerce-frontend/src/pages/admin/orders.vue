@@ -35,8 +35,27 @@
                  icon="mdi-refresh"
           >
           </v-btn>
-        </v-toolbar>
 
+          <create-order-dialog v-slot:default="{ props: activatorProps }" @remove="fetchProducts" :products="products">
+            <v-btn class="mx-2"
+                   v-if="!mobile"
+                   :disabled="loading"
+                   v-bind="activatorProps"
+                   text="Gerar"
+                   variant="flat"
+                   append-icon="mdi-hammer">
+            </v-btn>
+            <v-btn v-else
+                   :disabled="loading"
+                   v-bind="activatorProps"
+                   variant="elevated"
+                   size="small"
+                   icon="mdi-hammer"
+            >
+            </v-btn>
+          </create-order-dialog>
+
+        </v-toolbar>
       </template>
 
       <template v-slot:expanded-row="{ columns, item }">
@@ -48,13 +67,16 @@
       </template>
 
       <template v-slot:item.amount="{ item }">
-        <v-number-input
-          :label="Quantidade"
-          :max="20"
-          :min="10"
-          :model-value="15"
-          :v-model="item.amount"
-        ></v-number-input>
+
+          <v-number-input
+            :max=99
+            :min=1
+            :model-value=1
+            inset
+            variant="outlined"
+          >
+          </v-number-input>
+
       </template>
 
     </v-data-table>
@@ -67,32 +89,29 @@
 import {useDisplay} from "vuetify";
 import {onMounted, ref} from "vue";
 import httpService from "@/api/HttpService";
+import CreateOrderDialog from "@/components/orders/create-order-dialog.vue";
 
 const {mobile} = useDisplay()
 const loading = ref(false)
 
-const selected = ref([
-
-]);
-
 const headers = ref([
   {
     title: 'id',
-    align: 'start',
+    align: 'center',
     sortable: true,
     key: 'id'
-  },
-  {
-    title: 'quantidade',
-    align: 'start',
-    sortable: true,
-    key: 'amount'
   },
   {
     title: 'nome',
     align: 'start',
     sortable: true,
     key: 'name'
+  },
+  {
+    title: 'Quantidade',
+    align: 'start',
+    sortable: true,
+    key: 'amount'
   },
   {
     title: 'preço',
@@ -108,18 +127,20 @@ const headers = ref([
   }
 ])
 
+const selected = ref([])
+
 const products = ref([])
 
 const fetchProducts = async () => {
   loading.value = true
   httpService.get('products').then(response => {
-    products.value = response.data.map(it => it.amount = 1);
+    products.value = response.data.map(it => Object.assign(it, { amount: 1 }))
     loading.value = false
   }).catch(error => {
     console.error('Erro ao buscar produtos:', error);
     loading.value = false;
   });
-}
+};
 
 
 onMounted(fetchProducts)

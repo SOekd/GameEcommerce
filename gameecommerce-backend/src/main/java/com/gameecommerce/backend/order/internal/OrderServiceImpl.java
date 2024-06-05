@@ -2,13 +2,10 @@ package com.gameecommerce.backend.order.internal;
 
 import com.gameecommerce.backend.order.*;
 import com.gameecommerce.backend.order.exception.InvalidOrderProductAmountException;
-import com.gameecommerce.backend.product.Product;
 import com.gameecommerce.backend.product.ProductRepository;
-import com.gameecommerce.backend.product.ProductService;
 import com.gameecommerce.backend.product.exception.ProductNotFoundException;
 import com.gameecommerce.backend.utils.RandomUtils;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -61,9 +58,6 @@ public class OrderServiceImpl implements OrderService {
                 ))
                 .toList();
 
-        if (orderCreateRequest.getCoupon() != null) {
-            // TODO: implement coupon validation
-        }
 
         val order = Order.builder()
                 .expiration(LocalDateTime.now().plusMinutes(orderExpirationMinutes))
@@ -71,7 +65,7 @@ public class OrderServiceImpl implements OrderService {
                 .orderStage(OrderStage.PENDING_PAYMENT)
                 .playerName(orderCreateRequest.getPlayerName())
                 .price(calculateTotalPrice(orderProducts))
-                .link(RandomUtils.getRandomString(4, 10))
+                .link(generateUniqueLink())
                 .pixQrCode("pix")
                 .discount(0)
                 .build();

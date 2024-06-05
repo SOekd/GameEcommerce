@@ -2,12 +2,10 @@ package com.gameecommerce.backend.order;
 
 import com.gameecommerce.backend.coupon.Coupon;
 import com.gameecommerce.backend.product.Product;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.PositiveOrZero;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
@@ -32,6 +30,7 @@ public class Order {
     private List<OrderProduct> products;
 
     @Enumerated(EnumType.STRING)
+    @Setter(AccessLevel.PRIVATE)
     private OrderStage orderStage;
 
     private String playerName;
@@ -42,6 +41,7 @@ public class Order {
     private LocalDateTime expiration;
 
     @ManyToOne(fetch = FetchType.EAGER)
+    @Nullable
     private Coupon coupon;
 
     private String pixQrCode;
@@ -55,6 +55,11 @@ public class Order {
 
     public int getTotalPrice() {
         return price - discount;
+    }
+
+    public void changeState(OrderStage stage) {
+
+
     }
 
 }
