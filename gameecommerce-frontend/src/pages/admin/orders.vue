@@ -1,11 +1,14 @@
 <template>
   <v-container fluid>
-    <h1>Produtos</h1>
+    <h1>Criar Compra</h1>
+    <p>Gere o link da sua encomenda através desse painel. Aqui você poderá gerar o link do pix facilmente!</p>
     <v-data-table
+      :v-model="selected"
       :headers="headers"
       :items="products"
       :loading="loading"
       show-expand
+      show-select
     >
 
       <template v-slot:loading>
@@ -31,28 +34,9 @@
                  size="small"
                  icon="mdi-refresh"
           >
-
           </v-btn>
-          <create-dialog v-slot:default="{ props: activatorProps }" @create="fetchProducts">
-            <v-btn
-              v-if="!mobile"
-              color="success"
-              variant="outlined"
-              text="Criar Produto"
-              append-icon="mdi-plus"
-              v-bind="activatorProps"
-            ></v-btn>
-            <v-btn
-              v-else
-              color="success"
-              text="Criar Produto"
-              variant="outlined"
-              size="small"
-              icon="mdi-plus"
-              v-bind="activatorProps">
-            </v-btn>
-          </create-dialog>
         </v-toolbar>
+
       </template>
 
       <template v-slot:expanded-row="{ columns, item }">
@@ -63,43 +47,14 @@
         </tr>
       </template>
 
-      <template v-slot:item.actions="{ item }">
-
-        <v-container>
-          <v-row class="align-center justify-center">
-            <v-col cols="auto">
-              <edit-dialog v-slot:default="{ props: activatorProps }" @edit="fetchProducts" :product="item">
-                <v-btn icon class="mx-2" size="small" variant="flat" v-bind="activatorProps">
-                  <v-icon
-                    size="small">
-                    mdi-pencil
-                  </v-icon>
-                  <v-tooltip
-                    activator="parent"
-                    location="top"
-                  >Editar
-                  </v-tooltip>
-                </v-btn>
-              </edit-dialog>
-            </v-col>
-            <v-col cols="auto">
-              <remove-dialog v-slot:default="{ props: activatorProps }" @remove="fetchProducts" :product="item">
-                <v-btn icon size="small" variant="flat" v-bind="activatorProps" >
-                  <v-icon
-                    size="small">
-                    mdi-delete
-                  </v-icon>
-                  <v-tooltip
-                    activator="parent"
-                    location="top"
-                  >Remover
-                  </v-tooltip>
-                </v-btn>
-              </remove-dialog>
-            </v-col>
-          </v-row>
-        </v-container>
-
+      <template v-slot:item.amount="{ item }">
+        <v-number-input
+          :label="Quantidade"
+          :max="20"
+          :min="10"
+          :model-value="15"
+          :v-model="item.amount"
+        ></v-number-input>
       </template>
 
     </v-data-table>
@@ -108,16 +63,17 @@
 
 <script setup>
 
-// localhost:8080/api/products
-import {onMounted, ref} from 'vue'
-import {useDisplay} from 'vuetify'
-import CreateDialog from "../../components/products/create-product-dialog.vue";
-import EditDialog from "../../components/products/edit-product-dialog.vue";
-import RemoveDialog from "../../components/products/remove-product-dialog.vue";
-import httpService from "../../api/HttpService";
+
+import {useDisplay} from "vuetify";
+import {onMounted, ref} from "vue";
+import httpService from "@/api/HttpService";
 
 const {mobile} = useDisplay()
 const loading = ref(false)
+
+const selected = ref([
+
+]);
 
 const headers = ref([
   {
@@ -125,6 +81,12 @@ const headers = ref([
     align: 'start',
     sortable: true,
     key: 'id'
+  },
+  {
+    title: 'quantidade',
+    align: 'start',
+    sortable: true,
+    key: 'amount'
   },
   {
     title: 'nome',
@@ -143,12 +105,6 @@ const headers = ref([
     align: 'start',
     sortable: true,
     key: 'servers'
-  },
-  {
-    title: 'ações',
-    align: 'center',
-    sortable: false,
-    key: 'actions'
   }
 ])
 
@@ -157,13 +113,13 @@ const products = ref([])
 const fetchProducts = async () => {
   loading.value = true
   httpService.get('products').then(response => {
-    products.value = response.data;
+    products.value = response.data.map(it => it.amount = 1);
     loading.value = false
   }).catch(error => {
     console.error('Erro ao buscar produtos:', error);
     loading.value = false;
   });
-};
+}
 
 
 onMounted(fetchProducts)

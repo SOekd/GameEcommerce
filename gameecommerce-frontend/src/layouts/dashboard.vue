@@ -16,7 +16,10 @@
             <v-icon :icon="item.icon"></v-icon>
           </template>
 
-          <v-list-item-title v-text="item.text"></v-list-item-title>
+          <v-list-item-title
+            v-text="item.text"
+          >
+          </v-list-item-title>
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
@@ -33,9 +36,9 @@ import {ref} from 'vue'
 const drawer = ref(null)
 
 const items = [
-  { text: 'Inicio', icon: 'mdi-home', to: 'admin' },
-  { text: 'Produtos', icon: 'mdi-shopping', to: 'admin/products' },
-  { text: 'Usuários', icon: 'mdi-account-multiple', to: 'admin/users' },
-  { text: 'Gerar Compra', icon: 'mdi-cart-variant', to: 'admin/buy' }
+  { text: 'Inicio', icon: 'mdi-home', to: '/admin' },
+  { text: 'Produtos', icon: 'mdi-shopping', to: '/admin/products' },
+  { text: 'Usuários', icon: 'mdi-account-multiple', to: '/admin/users' },
+  { text: 'Gerar Compra', icon: 'mdi-cart-variant', to: '/admin/orders' }
 ]
 </script>

@@ -6,6 +6,7 @@ import com.gameecommerce.backend.product.Product;
 import com.gameecommerce.backend.product.ProductRepository;
 import com.gameecommerce.backend.product.ProductService;
 import com.gameecommerce.backend.product.exception.ProductNotFoundException;
+import com.gameecommerce.backend.utils.RandomUtils;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.val;
@@ -70,6 +71,8 @@ public class OrderServiceImpl implements OrderService {
                 .orderStage(OrderStage.PENDING_PAYMENT)
                 .playerName(orderCreateRequest.getPlayerName())
                 .price(calculateTotalPrice(orderProducts))
+                .link(RandomUtils.getRandomString(4, 10))
+                .pixQrCode("pix")
                 .discount(0)
                 .build();
 
@@ -87,6 +90,14 @@ public class OrderServiceImpl implements OrderService {
         return products.stream()
                 .mapToInt(orderProduct -> orderProduct.getProduct().getPrice() * orderProduct.getAmount())
                 .sum();
+    }
+
+    private String generateUniqueLink() {
+        String link;
+        do {
+            link = RandomUtils.getRandomString(10, 15);
+        } while (orderRepository.findOrderByLink(link).isPresent());
+        return link;
     }
 
 }

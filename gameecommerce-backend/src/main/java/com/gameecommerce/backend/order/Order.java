@@ -25,6 +25,9 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Column(unique = true)
+    private String link;
+
     @ManyToMany(fetch = FetchType.EAGER)
     private List<OrderProduct> products;
 
@@ -40,6 +43,8 @@ public class Order {
 
     @ManyToOne(fetch = FetchType.EAGER)
     private Coupon coupon;
+
+    private String pixQrCode;
 
     // promotion codes
     @PositiveOrZero
