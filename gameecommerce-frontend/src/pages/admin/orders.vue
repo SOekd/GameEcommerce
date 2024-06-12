@@ -1,9 +1,10 @@
 <template>
+
   <v-container fluid>
     <h1>Criar Compra</h1>
     <p>Gere o link da sua encomenda através desse painel. Aqui você poderá gerar o link do pix facilmente!</p>
     <v-data-table
-      :v-model="selected"
+      v-model="selected"
       :headers="headers"
       :items="products"
       :loading="loading"
@@ -36,7 +37,7 @@
           >
           </v-btn>
 
-          <create-order-dialog v-slot:default="{ props: activatorProps }" @remove="fetchProducts" :products="products">
+          <create-order-dialog v-slot:default="{ props: activatorProps }" :selected="parseSelected()">
             <v-btn class="mx-2"
                    v-if="!mobile"
                    :disabled="loading"
@@ -108,7 +109,7 @@ const headers = ref([
     key: 'name'
   },
   {
-    title: 'Quantidade',
+    title: 'quantidade',
     align: 'start',
     sortable: true,
     key: 'amount'
@@ -131,6 +132,22 @@ const selected = ref([])
 
 const products = ref([])
 
+const parseSelected = () => {
+
+  let currentProducts = []
+  for (let i = 0; i < selected.value.length; i++) {
+
+    let productId = selected.value[i]
+
+    let product = products.value.find(it => it.id === productId)
+
+    currentProducts.push(product)
+  }
+
+  return currentProducts
+}
+
+
 const fetchProducts = async () => {
   loading.value = true
   httpService.get('products').then(response => {
@@ -141,7 +158,6 @@ const fetchProducts = async () => {
     loading.value = false;
   });
 };
-
 
 onMounted(fetchProducts)
 

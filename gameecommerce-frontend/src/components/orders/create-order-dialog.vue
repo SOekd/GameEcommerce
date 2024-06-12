@@ -33,26 +33,12 @@
               <v-col cols="12">
                 <v-text-field
                   v-model="creatingProduct.name"
-                  label="Nome"
+                  label="Nome no Jogo"
                   :rules="nameRules"
                   variant="outlined"
                   required
                 ></v-text-field>
               </v-col>
-            </v-row>
-
-            <v-row>
-              <v-col cols="12">
-                <v-text-field
-                  :rules="priceRules"
-                  type="number"
-                  v-model="creatingProduct.price"
-                  label="Preço"
-                  variant="outlined"
-                >
-                </v-text-field>
-              </v-col>
-
             </v-row>
 
           </v-container>
@@ -75,7 +61,7 @@
             text="Gerar"
             :loading="loading"
             variant="flat"
-            @click="postProduct"
+            @click="postOrder"
           ></v-btn>
         </v-card-actions>
       </v-card>
@@ -87,6 +73,13 @@
 import {ref, reactive} from 'vue'
 import httpService from "@/api/HttpService";
 
+const props = defineProps({
+  selected: {
+    type: Array,
+    required: true
+  }
+})
+
 const nameRules = ref([
   (v) => !!v || 'Nome é obrigatório',
   (v) => (v && v.length >= 4) || 'Nome deve ter no mínimo 4 caracteres',
@@ -95,32 +88,33 @@ const nameRules = ref([
 
 
 const creatingProduct = reactive({
-  name: '',
-  price: 0,
-  description: '',
-  servers: []
+  name: ''
 })
 
 
 const dialog = ref(false)
 
-function clearProduct() {
+function clearOrderName() {
   creatingProduct.name = ''
-  creatingProduct.price = 0
-  creatingProduct.description = ''
-  creatingProduct.servers = []
 }
 
 const loading = ref(false)
 const alert = ref(false)
 
-function postProduct() {
+function postOrder() {
   loading.value = true
-  httpService.post('products', JSON.stringify({
-    name: creatingProduct.name,
-    price: (creatingProduct.price * 100).toFixed(0),
-    description: creatingProduct.description,
-    servers: creatingProduct.servers
+
+  const products = new Map();
+
+  console.log("Selected: " + JSON.stringify(props.selected))
+
+  props.selected.forEach(product => {
+    products.set(product.id, product.amount)
+  })
+
+  httpService.post('orders', JSON.stringify({
+    playerName: creatingProduct.name,
+    products: Object.fromEntries(products)
   })).then(response => {
 
     console.log("Response: ", response)
@@ -128,7 +122,7 @@ function postProduct() {
     alert.value = false
     loading.value = false
 
-    clearProduct()
+    clearOrderName()
 
   })
     .catch(error => {

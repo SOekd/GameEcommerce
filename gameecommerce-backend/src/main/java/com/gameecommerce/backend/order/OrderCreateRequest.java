@@ -9,7 +9,7 @@ import java.util.Map;
 @Data
 public class OrderCreateRequest {
 
-    private Map<Long, Integer> productIds;
+    private Map<Long, Integer> products;
 
     @Size(min = 3, max = 90)
     private String playerName;

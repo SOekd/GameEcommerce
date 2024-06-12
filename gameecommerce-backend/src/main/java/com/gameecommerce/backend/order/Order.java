@@ -26,7 +26,7 @@ public class Order {
     @Column(unique = true)
     private String link;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<OrderProduct> products;
 
     @Enumerated(EnumType.STRING)
@@ -40,7 +40,7 @@ public class Order {
 
     private LocalDateTime expiration;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @Nullable
     private Coupon coupon;
 

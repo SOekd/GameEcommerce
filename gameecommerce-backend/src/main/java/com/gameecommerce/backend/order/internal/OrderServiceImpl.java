@@ -33,20 +33,22 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Order create(@NotNull OrderCreateRequest orderCreateRequest) {
 
-        val products = orderCreateRequest.getProductIds().keySet().stream()
+        val products = orderCreateRequest.getProducts().keySet().stream()
                 .map(productRepository::findById)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .toList();
 
-        if (products.size() != orderCreateRequest.getProductIds().size()) {
-            val missingProductIds = orderCreateRequest.getProductIds().keySet().stream()
+        System.out.println("Products: " + products.size());
+
+        if (products.size() != orderCreateRequest.getProducts().size()) {
+            val missingProductIds = orderCreateRequest.getProducts().keySet().stream()
                     .filter(productId -> products.stream().noneMatch(product -> product.getId().equals(productId)))
                     .toList();
             throw new ProductNotFoundException("Product not found: " + missingProductIds.stream().map(String::valueOf).toList());
         }
 
-        if (products.stream().anyMatch(product -> orderCreateRequest.getProductIds().get(product.getId()) <= 0)) {
+        if (products.stream().anyMatch(product -> orderCreateRequest.getProducts().get(product.getId()) <= 0)) {
             throw new InvalidOrderProductAmountException("Product amount must be greater than 0");
         }
 
@@ -54,7 +56,7 @@ public class OrderServiceImpl implements OrderService {
                 .map(product -> new OrderProduct(
                         null,
                         product,
-                        orderCreateRequest.getProductIds().get(product.getId())
+                        orderCreateRequest.getProducts().get(product.getId())
                 ))
                 .toList();
 
@@ -82,6 +84,9 @@ public class OrderServiceImpl implements OrderService {
 
     private int calculateTotalPrice(List<OrderProduct> products) {
         return products.stream()
+                .peek(orderProduct -> {
+                    System.out.println("Teste: " + orderProduct.getProduct().getPrice() + " " + orderProduct.getAmount());
+                })
                 .mapToInt(orderProduct -> orderProduct.getProduct().getPrice() * orderProduct.getAmount())
                 .sum();
     }
