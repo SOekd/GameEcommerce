@@ -47,6 +47,10 @@ dependencies {
     testImplementation 'org.springframework.modulith:spring-modulith-starter-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
+
+    implementation 'com.mercadopago:sdk-java:2.1.24'
+
+    implementation 'com.auth0:java-jwt:4.4.0'
 }
 
 tasks.named('test') {

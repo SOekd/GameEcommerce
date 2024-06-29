@@ -6,6 +6,7 @@
     <v-btn
       class="mt-10"
       variant="outlined"
+      @click="goToAdmin"
     >
       Começar
     </v-btn>
@@ -13,6 +14,14 @@
 </template>
 
 <script setup>
+
+import {useRouter} from "vue-router";
+
+const router = useRouter()
+
+function goToAdmin() {
+  router.push('/admin')
+}
 
 </script>
 

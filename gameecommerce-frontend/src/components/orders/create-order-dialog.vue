@@ -17,7 +17,7 @@
 
           <v-container>
 
-            <v-row cols="10">
+            <v-row cols="12">
               <v-alert
                 text="Responda os campos corretamente para gerar um pedido!"
                 type="error"
@@ -27,6 +27,23 @@
                 class="ma-3"
                 v-model="alert"
               ></v-alert>
+              <v-alert
+                v-if="link !== ''"
+                type="success"
+                border="start"
+                variant="elevated"
+                closable
+                class="ma-3"
+              >
+                <v-btn
+                  @click="copyLinkToClipboard"
+                  variant="elevated"
+                  color="success"
+                  class="ma-2"
+                >
+                  Clique aqui para copiar o link!
+                </v-btn>
+              </v-alert>
             </v-row>
 
             <v-row>
@@ -50,7 +67,7 @@
 
         <v-card-actions>
           <v-btn
-            text="Cancelar"
+            text="Fechar"
             color="error"
             variant="outlined"
             @click="dialog = false"
@@ -101,8 +118,12 @@ function clearOrderName() {
 const loading = ref(false)
 const alert = ref(false)
 
+const link = ref('')
+
 function postOrder() {
   loading.value = true
+
+  link.value = ''
 
   const products = new Map();
 
@@ -118,9 +139,9 @@ function postOrder() {
   })).then(response => {
 
     console.log("Response: ", response)
-    dialog.value = false
-    alert.value = false
     loading.value = false
+
+    link.value = "http://localhost:3000/pay/" + response.data.link
 
     clearOrderName()
 
@@ -132,6 +153,14 @@ function postOrder() {
       alert.value = true
 
     })
+}
+
+function copyLinkToClipboard() {
+
+  dialog.value = false
+  alert.value = false
+
+  navigator.clipboard.writeText(link.value)
 }
 
 </script>

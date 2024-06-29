@@ -14,7 +14,4 @@ public class OrderCreateRequest {
     @Size(min = 3, max = 90)
     private String playerName;
 
-    @Nullable
-    private String coupon;
-
 }

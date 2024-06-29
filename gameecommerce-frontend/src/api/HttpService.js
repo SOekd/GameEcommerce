@@ -1,4 +1,5 @@
 import Axios from "axios";
+import Cookies from "js-cookie";
 
 const apiBaseUrl = import.meta.env.VITE_API_URL;
 
@@ -6,10 +7,14 @@ class HttpService {
 
   constructor() {
     console.log('apiBaseUrl:', apiBaseUrl);
+
+    const jwtToken = Cookies.get('jwt');
+
     this.axios = Axios.create({
       baseURL: apiBaseUrl,
       headers: {
         'Content-type': 'application/json',
+        'Authorization': jwtToken ? `Bearer ${jwtToken}` : '',
       },
     });
   }

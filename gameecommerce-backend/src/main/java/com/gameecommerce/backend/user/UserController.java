@@ -24,14 +24,14 @@ public class UserController {
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
-    @GetMapping("/email/{email}")
-    public ResponseEntity<User> findByEmail(@PathVariable String email) {
-        return ResponseEntity.ok(userService.getUserByEmail(email));
-    }
-
     @GetMapping("/username/{username}")
     public ResponseEntity<User> findByUsername(@PathVariable String username) {
         return ResponseEntity.ok(userService.getUserByUsername(username));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<User> deleteById(@PathVariable UUID id) {
+        return ResponseEntity.ok(userService.deleteUserById(id));
     }
 
     @GetMapping

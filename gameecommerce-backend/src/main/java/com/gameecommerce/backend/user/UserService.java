@@ -9,12 +9,12 @@ public interface UserService {
 
     User create(@NotNull User user);
 
-    User getUserByEmail(@NotNull String email);
-
     User getUserByUsername(@NotNull String username);
 
     User getUserById(@NotNull UUID id);
 
     List<User> getAll();
+
+    User deleteUserById(@NotNull UUID id);
 
 }

@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.Length;
 
 import java.util.UUID;
 
@@ -25,10 +26,7 @@ public class User {
     @Size(min = 2, max = 60)
     private String username;
 
+    @Column(length = 200)
     private String password;
-
-    @Email
-    @Column(unique = true)
-    private String email;
 
 }

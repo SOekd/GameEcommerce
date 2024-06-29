@@ -1,7 +1,7 @@
 <template>
   <v-main class="d-flex flex-column align-center justify-center pay-card">
     <h1>Game Ecommerce</h1>
-    {{ $route.params.id }}
+    <p>Nome no jogo: <b>{{ order.playerName }}</b></p>
 
     <v-container class="" style="max-width: 500px">
 
@@ -41,16 +41,16 @@
                     class="bg-white"
                     rounded>
                     <v-img
-                      src="https://i.imgur.com/rAMvIw2.png"
+                      :src='getImageSource()'
                     ></v-img>
                   </v-sheet>
                 </v-col>
                 <v-col>
                   <div class="d-flex flex-column">
                     <p class="font-weight-bold text-subtitle-1">Valor do Pagamento</p>
-                    <p class="font-weight-bold text-subtitle-2">R$ 280,00</p>
+                    <p class="font-weight-bold text-subtitle-2">R$ {{ order.price / 100 }}</p>
 
-                    <small class="mt-1">Válido até 24/05/2024 as 17:04</small>
+                    <small class="mt-1">{{ getExpireDate() }}</small>
                     <v-btn
                       class="mt-3"
                       variant="elevated"
@@ -65,6 +65,24 @@
         </v-col>
       </v-row>
 
+      <v-row>
+        <v-col cos="12">
+          <v-sheet
+            :elevation="2"
+            border
+            class="pa-10"
+            rounded
+          >
+            <p>Produtos:</p><br>
+            <ul>
+              <li :key="product.product.name" v-for="product in order.products">
+                {{ product.amount }} - {{ product.product.name }}
+              </li>
+            </ul>
+          </v-sheet>
+        </v-col>
+      </v-row>
+
     </v-container>
 
 
@@ -72,6 +90,45 @@
 </template>
 
 <script setup>
+
+import httpService from "@/api/HttpService";
+import {useRoute, useRouter} from "vue-router";
+import {ref} from "vue";
+
+const route = useRoute()
+const router = useRouter()
+
+const order = ref()
+
+
+httpService.get('orders/' + route.params.id).then(response => {
+
+  console.log("Response: ", response)
+  order.value = response.data
+
+
+})
+  .catch(error => {
+    console.error("Error: ", error.message)
+    router.push('/pay/not-found')
+  })
+
+
+function getImageSource() {
+  return 'data:image/jpeg;base64,' + order.value.gatewayPayment.pixQrCode
+}
+
+function getExpireDate() {
+  const date = new Date(order.value.expiration);
+
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+
+  return `Válido até ${day}/${month}/${year} às ${hours}:${minutes}`;
+}
 
 </script>
 

@@ -1,8 +1,6 @@
 package com.gameecommerce.backend.order;
 
-import com.gameecommerce.backend.coupon.Coupon;
-import com.gameecommerce.backend.product.Product;
-import jakarta.annotation.Nullable;
+import com.gameecommerce.backend.gateway.GatewayPayment;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.*;
@@ -40,26 +38,17 @@ public class Order {
 
     private LocalDateTime expiration;
 
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @Nullable
-    private Coupon coupon;
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private GatewayPayment gatewayPayment;
 
-    private String pixQrCode;
-
-    // promotion codes
     @PositiveOrZero
     private int price;
 
     @PositiveOrZero
     private int discount;
 
-    public int getTotalPrice() {
-        return price - discount;
-    }
-
-    public void changeState(OrderStage stage) {
-
-
+    public void changeState(OrderStage orderStage) {
+        this.orderStage = orderStage;
     }
 
 }
