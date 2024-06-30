@@ -2,6 +2,7 @@ package com.gameecommerce.backend.order.internal;
 
 import com.gameecommerce.backend.gateway.impl.mercadopago.MercadoPagoGatewayService;
 import com.gameecommerce.backend.order.*;
+import com.gameecommerce.backend.order.exception.InvalidDeliverException;
 import com.gameecommerce.backend.order.exception.InvalidOrderProductAmountException;
 import com.gameecommerce.backend.order.exception.OrderNotFoundException;
 import com.gameecommerce.backend.product.ProductRepository;
@@ -10,12 +11,15 @@ import com.gameecommerce.backend.utils.RandomUtils;
 import jakarta.validation.constraints.NotNull;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -76,12 +80,11 @@ public class OrderServiceImpl implements OrderService {
         val order = Order.builder()
                 .expiration(LocalDateTime.now().plusMinutes(orderExpirationMinutes))
                 .products(orderProducts)
-                .orderStage(OrderStage.PENDING_PAYMENT)
+                .state(OrderState.PENDING_PAYMENT)
                 .playerName(orderCreateRequest.getPlayerName())
                 .price(totalPrice)
-                .gatewayPayment(gatewayPayment)
+                .paymentGateway(gatewayPayment)
                 .link(generateUniqueLink())
-                .discount(0)
                 .build();
 
         return orderRepository.save(order);
@@ -93,7 +96,7 @@ public class OrderServiceImpl implements OrderService {
         val order = orderRepository.findOrderByLink(link).orElseThrow(() -> new OrderNotFoundException("Order not found"));
 
         if (order.getExpiration().isBefore(LocalDateTime.now())) {
-            order.changeState(OrderStage.EXPIRED);
+            order.changeState(OrderState.EXPIRED);
             return orderRepository.save(order);
         }
 
@@ -101,15 +104,45 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<Order> getAllToDeliver() {
-        val waiting = orderRepository.findAllByOrderStage(OrderStage.WAITING_DELIVERY);
+    public OrderSearchResponse search(OrderSearchRequest orderSearchRequest) {
 
-        waiting.forEach(order -> {
-            order.changeState(OrderStage.DELIVERED);
-            orderRepository.save(order);
-        });
+        val page = PageRequest.of(
+                orderSearchRequest.getPage() - 1,
+                orderSearchRequest.getItemsPerPage(),
+                Sort.by(orderSearchRequest.getSortDirection(), orderSearchRequest.getSortColumn())
+        );
 
-        return waiting;
+
+        val states = orderSearchRequest.getStates();
+
+        if (states.isEmpty()) {
+            states.addAll(List.of(OrderState.values()));
+        }
+
+        if (orderSearchRequest.getSearch() == null || orderSearchRequest.getSearch().isBlank()) {
+            return new OrderSearchResponse(
+                    orderRepository.findAllByStateIn(states, page),
+                    orderRepository.countAllByStateIn(states)
+            );
+        }
+
+        val searchName = "%" + orderSearchRequest.getSearch() + "%";
+        return new OrderSearchResponse(
+                orderRepository.findAllByPlayerNameLikeAndStateIn(searchName, states, page),
+                orderRepository.countAllByPlayerNameLikeAndStateIn(searchName, states)
+        );
+    }
+
+    @Override
+    public Order deliver(UUID id) {
+        val order = orderRepository.findById(id).orElseThrow(() -> new OrderNotFoundException("Order not found"));
+
+        if (order.getState() != OrderState.WAITING_DELIVERY) {
+            throw new InvalidDeliverException("Order must be in WAITING_DELIVERY state");
+        }
+
+        order.changeState(OrderState.DELIVERED);
+        return orderRepository.save(order);
     }
 
     private int calculateTotalPrice(List<OrderProduct> products) {
@@ -126,36 +159,30 @@ public class OrderServiceImpl implements OrderService {
         return link;
     }
 
-    @Scheduled(fixedRate = 30000)
-    public void checkExpiredOrders() {
-        System.out.println("Checking expired orders");
-        val expiredOrders = orderRepository.findAllByOrderStageAndExpirationBefore(OrderStage.PENDING_PAYMENT, LocalDateTime.now());
-
-        System.out.println("expired: " + expiredOrders.size());
+    @Scheduled(fixedRate = 10000)
+    public void checkOrders() {
+        val expiredOrders = orderRepository.findAllByStateAndExpirationBefore(OrderState.PENDING_PAYMENT, LocalDateTime.now());
 
         expiredOrders.forEach(order -> {
-            order.changeState(OrderStage.EXPIRED);
+            order.changeState(OrderState.EXPIRED);
             orderRepository.save(order);
         });
-    }
 
-    @Scheduled(fixedRate = 30000)
-    public void checkAllNonExpired() {
-        System.out.println("Checking all non expired orders");
-        val nonExpiredOrders = orderRepository.findAllByOrderStage(OrderStage.PENDING_PAYMENT);
-
-        System.out.println("all: " + orderRepository.findAll().size());
-        System.out.println("n expired: " + nonExpiredOrders);
+        val nonExpiredOrders = orderRepository.findAllByState(OrderState.PENDING_PAYMENT);
 
         nonExpiredOrders.forEach(order -> {
 
-            if (mercadoPagoGatewayService.paid(order.getGatewayPayment().getGatewayOrderId())) {
-                System.out.println("PAID!");
-            } else {
-                System.out.println("NOT PAID!");
+            val stage = mercadoPagoGatewayService.getStage(order.getPaymentGateway().getGatewayOrderId());
+
+            if (stage == null || stage == OrderState.PENDING_PAYMENT) {
+                return;
             }
 
+            order.changeState(stage);
+            orderRepository.save(order);
         });
+
     }
+
 
 }

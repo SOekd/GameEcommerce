@@ -164,13 +164,6 @@ const alert = ref(false)
 
 function editProduct() {
   loading.value = true
-  console.log("Editing Product: ", editingProduct)
-  console.log("Editing Product2: ", JSON.stringify({
-    name: editingProduct.name,
-    price: (editingProduct.price * 100).toFixed(0),
-    description: editingProduct.description,
-    servers: toRaw(editingProduct.servers)
-  }))
 
   httpService.put(`products/${editingProduct.id}`, JSON.stringify({
     name: editingProduct.name,
@@ -179,7 +172,6 @@ function editProduct() {
     servers: editingProduct.servers
   })).then(response => {
 
-    console.log("Response: ", response)
     dialog.value = false
     alert.value = false
     loading.value = false

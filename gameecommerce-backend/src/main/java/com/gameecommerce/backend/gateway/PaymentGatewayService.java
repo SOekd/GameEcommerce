@@ -1,9 +1,13 @@
 package com.gameecommerce.backend.gateway;
 
+import com.gameecommerce.backend.order.OrderState;
+import org.jetbrains.annotations.Nullable;
+
 public interface PaymentGatewayService {
 
-    GatewayPayment createPayment(String link, String player, long price);
+    PaymentGateway createPayment(String link, String player, long price);
 
-    boolean paid(String id);
+    @Nullable
+    OrderState getStage(String id);
 
 }

@@ -2,7 +2,6 @@ package com.gameecommerce.backend.order;
 
 import jakarta.validation.constraints.NotNull;
 
-import java.util.List;
 import java.util.UUID;
 
 public interface OrderService {
@@ -11,6 +10,8 @@ public interface OrderService {
 
     Order getOrderByLink(@NotNull String link);
 
-    List<Order> getAllToDeliver();
+    OrderSearchResponse search(@NotNull OrderSearchRequest orderSearchRequest);
+
+    Order deliver(UUID id);
 
 }

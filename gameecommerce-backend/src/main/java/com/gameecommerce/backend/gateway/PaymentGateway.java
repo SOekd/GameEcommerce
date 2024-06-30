@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class GatewayPayment {
+public class PaymentGateway {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -1,12 +1,13 @@
 package com.gameecommerce.backend.order;
 
-public enum OrderStage {
+public enum OrderState {
 
     PENDING_PAYMENT,
-    COMPLETED,
     EXPIRED,
+    REFUNDING,
     REFUNDED,
     WAITING_DELIVERY,
-    DELIVERED
+    DELIVERED,
+    CANCELLED
 
 }

@@ -64,10 +64,8 @@ const alert = ref(false)
 
 function removeProduct() {
   loading.value = true
-  console.log("Product: ", props.product)
   httpService.delete(`products/${props.product.id}`).then(response => {
 
-    console.log("Response: ", response)
     dialog.value = false
     alert.value = false
     loading.value = false

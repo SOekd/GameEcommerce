@@ -65,15 +65,12 @@ function login() {
     return
   }
 
-
-  console.log("user: " + user.username + " password: " + user.password)
   authenticationService.authenticate(user.username, user.password)
     .then(response => {
       if (!response) {
         alert.value = true
         return
       }
-      console.log("login: " + response)
 
       router.push('/admin')
     })

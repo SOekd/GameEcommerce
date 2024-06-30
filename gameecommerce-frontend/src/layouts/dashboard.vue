@@ -39,6 +39,7 @@ const items = [
   { text: 'Inicio', icon: 'mdi-home', to: '/admin' },
   { text: 'Produtos', icon: 'mdi-shopping', to: '/admin/products' },
   { text: 'Usuários', icon: 'mdi-account-multiple', to: '/admin/users' },
-  { text: 'Gerar Compra', icon: 'mdi-cart-variant', to: '/admin/orders' }
+  { text: 'Compras', icon: 'mdi-cart-variant', to: '/admin/orders' },
+  { text: 'Gerar Compra', icon: 'mdi-cart-plus', to: '/admin/create-order' }
 ]
 </script>

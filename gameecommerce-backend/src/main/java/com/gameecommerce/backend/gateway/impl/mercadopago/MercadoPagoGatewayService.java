@@ -1,7 +1,8 @@
 package com.gameecommerce.backend.gateway.impl.mercadopago;
 
-import com.gameecommerce.backend.gateway.GatewayPayment;
+import com.gameecommerce.backend.gateway.PaymentGateway;
 import com.gameecommerce.backend.gateway.PaymentGatewayService;
+import com.gameecommerce.backend.order.OrderState;
 import com.mercadopago.MercadoPagoConfig;
 import com.mercadopago.client.payment.PaymentClient;
 import com.mercadopago.client.payment.PaymentCreateRequest;
@@ -12,20 +13,22 @@ import com.mercadopago.net.MPResultsResourcesPage;
 import com.mercadopago.net.MPSearchRequest;
 import com.mercadopago.resources.payment.Payment;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class MercadoPagoGatewayService implements PaymentGatewayService {
 
     @Override
-    public GatewayPayment createPayment(String link, String player, long price) {
+    public PaymentGateway createPayment(String link, String player, long price) {
         MercadoPagoConfig.setAccessToken(getAccessToken());
 
         PaymentClient paymentClient = new PaymentClient();
@@ -34,8 +37,8 @@ public class MercadoPagoGatewayService implements PaymentGatewayService {
 
         PaymentCreateRequest paymentCreateRequest =
                 PaymentCreateRequest.builder()
-                        .transactionAmount(new BigDecimal("100"))
-                        .description("Título do produto")
+                        .transactionAmount(new BigDecimal(price))
+                        .description("Produto - GameEcommerce")
                         .paymentMethodId("pix")
                         .externalReference(reference)
                         .payer(
@@ -47,21 +50,22 @@ public class MercadoPagoGatewayService implements PaymentGatewayService {
                         )
                         .build();
 
-        Payment createdPayment = null;
+        Payment createdPayment;
         try {
             createdPayment = paymentClient.create(paymentCreateRequest);
         } catch (MPException e) {
             throw new RuntimeException(e);
-        } catch (MPApiException e) {
+        } catch (MPApiException exception) {
 
-            var apiResponse = e.getApiResponse();
+            // custava adicionar na mensagem da exceção?
+            var apiResponse = exception.getApiResponse();
             var content = apiResponse.getContent();
-            System.out.println(content);
+            log.error(content);
 
-            throw new RuntimeException(e);
+            throw new RuntimeException(exception);
         }
 
-        return new GatewayPayment(
+        return new PaymentGateway(
                 null,
                 reference,
                 createdPayment.getPointOfInteraction().getTransactionData().getQrCodeBase64()
@@ -69,50 +73,53 @@ public class MercadoPagoGatewayService implements PaymentGatewayService {
     }
 
     @Override
-    public boolean paid(String id) {
+    public @Nullable OrderState getStage(String id) {
         MercadoPagoConfig.setAccessToken(getAccessToken());
 
         PaymentClient paymentClient = new PaymentClient();
-
-        System.out.println("Reference: " + id);
-        val filter = new HashMap<String, Object>();
-        filter.put("sort", "date_created");
-        filter.put("criteria", "desc");
-//        filter.put("external_reference", id);
-        filter.put("range", "date_created");
-        filter.put("begin_date", "NOW-30DAYS");
-        filter.put("end_date", "NOW");
 
         MPResultsResourcesPage<Payment> result;
         try {
 
             result = paymentClient.search(MPSearchRequest.builder()
-                    .filters(filter)
-                    .limit(10)
+                    .filters(Map.of(
+                                    "sort", "date_created",
+                                    "criteria", "desc",
+                                    "external_reference", id
+                            )
+                    )
+                    .limit(1)
                     .offset(0)
                     .build());
-        } catch (MPException e) {
+        } catch (MPException exception) {
+            throw new RuntimeException(exception);
+        } catch (MPApiException exception) {
 
-            throw new RuntimeException(e);
-        } catch (MPApiException e) {
-            var apiResponse = e.getApiResponse();
-            var content = apiResponse.getContent();
-            System.out.println(content);
+            val apiResponse = exception.getApiResponse();
+            val content = apiResponse.getContent();
+            log.error(content);
 
-            throw new RuntimeException(e);
+            throw new RuntimeException(exception);
         }
 
-        System.out.println("Size: " + result.getResults().size());
+        val payment = result.getResults().stream()
+                .findFirst()
+                .orElse(null);
 
-        for (Payment resultResult : result.getResults()) {
-            System.out.println("-----------------");
-            System.out.println(resultResult.getTransactionAmount());
-            System.out.println(resultResult.getDescription());
-            System.out.println(resultResult.getExternalReference());
-            System.out.println(resultResult.getStatus());
+        if (payment == null) {
+            return null;
         }
 
-        return false;
+        val status = payment.getStatus();
+
+        return switch (status) {
+            case "approved" -> OrderState.WAITING_DELIVERY;
+            case "pending", "in_process", "authorized" -> OrderState.PENDING_PAYMENT;
+            case "in_mediation" -> OrderState.REFUNDING;
+            case "refunded", "charged_back" -> OrderState.REFUNDED;
+            case "rejected", "cancelled" -> OrderState.CANCELLED;
+            default -> throw new RuntimeException("Unknown payment status: " + status);
+        };
     }
 
     private String getAccessToken() {

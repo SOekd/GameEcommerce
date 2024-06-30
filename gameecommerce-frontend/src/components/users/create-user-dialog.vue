@@ -51,29 +51,6 @@
               </v-col>
             </v-row>
 
-            <v-row>
-              <v-col cols="12">
-                <v-text-field
-                  v-model="creatingUser.email"
-                  label="Email"
-                  :rules="emailRules"
-                  type="email"
-                  variant="outlined"
-                ></v-text-field>
-              </v-col>
-            </v-row>
-
-            <v-row>
-              <v-col cols="12">
-                <v-select
-                  v-model="creatingUser.roles"
-                  :items="['ADMIN', 'USER']"
-                  label="Permissões"
-                  multiple
-                  required
-                ></v-select>
-              </v-col>
-            </v-row>
           </v-container>
 
         </v-form>
@@ -158,7 +135,6 @@ function postUser() {
     roles: creatingUser.roles
   })).then(response => {
 
-    console.log("Response: ", response)
     dialog.value = false
     alert.value = false
     loading.value = false

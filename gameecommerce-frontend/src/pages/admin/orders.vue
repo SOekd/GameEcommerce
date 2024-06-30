@@ -1,99 +1,95 @@
 <template>
 
   <v-container fluid>
-    <h1>Criar Compra</h1>
-    <p>Gere o link da sua encomenda através desse painel. Aqui você poderá gerar o link do pix facilmente!</p>
-    <v-data-table
-      v-model="selected"
-      :headers="headers"
-      :items="products"
-      :loading="loading"
-      show-expand
-      show-select
-    >
-
-      <template v-slot:loading>
-        <v-skeleton-loader type="table-row@10"></v-skeleton-loader>
-      </template>
-
-      <template v-slot:top>
-        <v-toolbar class="px-4">
-          <v-toolbar-title>Produtos</v-toolbar-title>
-          <v-spacer></v-spacer>
-          <v-btn class="mx-2"
-                 v-if="!mobile"
-                 :disabled="loading"
-                 @click="fetchProducts"
-                 text="Atualizar"
-                 variant="flat"
-                 append-icon="mdi-refresh">
-          </v-btn>
-          <v-btn v-else
-                 :disabled="loading"
-                 @click="fetchProducts"
-                 variant="elevated"
-                 size="small"
-                 icon="mdi-refresh"
-          >
-          </v-btn>
-
-          <create-order-dialog v-slot:default="{ props: activatorProps }" :selected="parseSelected()">
-            <v-btn class="mx-2"
-                   v-if="!mobile"
-                   :disabled="loading"
-                   v-bind="activatorProps"
-                   text="Gerar"
-                   variant="flat"
-                   append-icon="mdi-hammer">
-            </v-btn>
-            <v-btn v-else
-                   :disabled="loading"
-                   v-bind="activatorProps"
-                   variant="elevated"
-                   size="small"
-                   icon="mdi-hammer"
-            >
-            </v-btn>
-          </create-order-dialog>
-
-        </v-toolbar>
-      </template>
-
-      <template v-slot:expanded-row="{ columns, item }">
-        <tr>
-          <td :colspan="columns.length" class="text-body-1">
-            {{ item.description }}
-          </td>
-        </tr>
-      </template>
-
-      <template v-slot:item.amount="{ item }">
-
-          <v-number-input
-            :max=99
-            :min=1
-            :model-value=1
-            inset
+    <v-container>
+      <h1 class="mb-3">Compras</h1>
+      <v-row
+        align="center"
+      >
+        <v-col cols="6">
+          <v-combobox
+            v-model="states"
+            multiple
+            label="Estados"
+            :items="['Pendente de Pagamento', 'Completo', 'Expirado', 'Reembolsando', 'Reembolsado', 'Aguardando Entrega', 'Entregue', 'Cancelado']"
             variant="outlined"
-          >
-          </v-number-input>
+          ></v-combobox>
+        </v-col>
+        <v-col cols="6">
+          <v-text-field
+            v-model="player"
+            label="Jogador"
+            clearable
+            variant="outlined"
+          ></v-text-field>
+        </v-col>
+      </v-row>
+
+    </v-container>
+    <v-data-table-server
+      :headers="headers"
+      :items="orders"
+      :loading="loading"
+      :search="search"
+      :items-length="total"
+      show-expand
+      @update:options="loadOrders"
+    >
+      <template v-slot:expanded-row="{ columns, item }">
+        <v-table>
+          <thead>
+          <tr>
+            <th class="text-left">
+              Quantidade
+            </th>
+            <th class="text-left">
+              Produtos
+            </th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr
+            v-for="product in item.products"
+            :key="product.product.name">
+            <td>{{ product.amount }}</td>
+            <td>{{ product.product.name }}</td>
+          </tr>
+          </tbody>
+        </v-table>
+      </template>
+
+      <template v-slot:item.actions="{ item }">
+
+        <v-container>
+          <v-row class="align-center justify-center">
+            <v-btn
+              :disabled="item.state !== 'Aguardando Entrega'"
+              color="success"
+              variant="outlined"
+              @click="deliver(item)"
+            >
+              Entregar
+            </v-btn>
+          </v-row>
+        </v-container>
 
       </template>
 
-    </v-data-table>
+      <template v-slot:item.link="{ item }">
+
+        <a :href="getLink(item)">{{ item.link }}</a>
+
+      </template>
+
+
+    </v-data-table-server>
   </v-container>
 </template>
 
 <script setup>
 
-
-import {useDisplay} from "vuetify";
-import {onMounted, ref} from "vue";
+import {ref} from "vue";
 import httpService from "@/api/HttpService";
-import CreateOrderDialog from "@/components/orders/create-order-dialog.vue";
-
-const {mobile} = useDisplay()
-const loading = ref(false)
 
 const headers = ref([
   {
@@ -103,63 +99,144 @@ const headers = ref([
     key: 'id'
   },
   {
-    title: 'nome',
-    align: 'start',
+    title: 'jogador',
+    align: 'center',
     sortable: true,
-    key: 'name'
+    key: 'playerName'
   },
   {
-    title: 'quantidade',
-    align: 'start',
+    title: 'link',
+    align: 'center',
     sortable: true,
-    key: 'amount'
+    key: 'link'
+  },
+  {
+    title: 'estado',
+    align: 'center',
+    sortable: true,
+    key: 'state'
   },
   {
     title: 'preço',
-    align: 'start',
+    align: 'center',
     sortable: true,
     key: 'price'
   },
   {
-    title: 'servidor',
-    align: 'start',
-    sortable: true,
-    key: 'servers'
+    title: 'confirmar',
+    align: 'center',
+    sortable: false,
+    key: 'actions'
   }
 ])
 
-const selected = ref([])
+const orders = ref([])
+const loading = ref(true)
+const search = ref('')
+const total = ref(0)
+const states = ref([])
+const player = ref('')
 
-const products = ref([])
+function loadOrders({page, itemsPerPage, sortBy}) {
+  loading.value = true
 
-const parseSelected = () => {
-
-  let currentProducts = []
-  for (let i = 0; i < selected.value.length; i++) {
-
-    let productId = selected.value[i]
-
-    let product = products.value.find(it => it.id === productId)
-
-    currentProducts.push(product)
+  const searchRequest = {
+    search: player.value,
+    page: page,
+    itemsPerPage: itemsPerPage,
+    sortColumn: 'id',
+    sortDirection: 'ASC',
+    states: states.value.map(rollbackStage)
   }
 
-  return currentProducts
+  if (sortBy.length) {
+    const sortKey = sortBy[0].key
+    const sortOrder = sortBy[0].order
+
+    Object.assign(searchRequest, {
+      sortColumn: sortKey,
+      sortDirection: sortOrder === 'asc' ? 'ASC' : 'DESC'
+    })
+  }
+
+  httpService.post("/orders/search", JSON.stringify(searchRequest))
+    .then(response => {
+      orders.value = response.data.orders.map(order => {
+        Object.assign(order, {
+          state: translateStage(order.state)
+        });
+        return order; // Retorne o objeto `order` modificado
+      });
+
+      total.value = response.data.total
+      loading.value = false
+    })
 }
 
+function getLink(item) {
+  return "http://localhost:3000/pay/" + item.link
+}
 
-const fetchProducts = async () => {
-  loading.value = true
-  httpService.get('products').then(response => {
-    products.value = response.data.map(it => Object.assign(it, { amount: 1 }))
-    loading.value = false
-  }).catch(error => {
-    console.error('Erro ao buscar produtos:', error);
-    loading.value = false;
-  });
-};
+function translateStage(state) {
+  switch (state) {
+    case 'PENDING_PAYMENT':
+      return 'Pendente de Pagamento'
+    case 'COMPLETED':
+      return 'Completo'
+    case 'EXPIRED':
+      return 'Expirado'
+    case 'REFUNDING':
+      return 'Reembolsando'
+    case 'REFUNDED':
+      return 'Reembolsado'
+    case 'WAITING_DELIVERY':
+      return 'Aguardando Entrega'
+    case 'DELIVERED':
+      return 'Entregue'
+    case 'CANCELLED':
+      return 'Cancelado'
+  }
+}
 
-onMounted(fetchProducts)
+function rollbackStage(state) {
+  switch (state) {
+    case 'Pendente de Pagamento':
+      return 'PENDING_PAYMENT'
+    case 'Completo':
+      return 'COMPLETED'
+    case 'Expirado':
+      return 'EXPIRED'
+    case 'Reembolsando':
+      return 'REFUNDING'
+    case 'Reembolsado':
+      return 'REFUNDED'
+    case 'Aguardando Entrega':
+      return 'WAITING_DELIVERY'
+    case 'Entregue':
+      return 'DELIVERED'
+    case 'Cancelado':
+      return 'CANCELLED'
+  }
+}
+
+function deliver(item) {
+  httpService.put("/orders/deliver/" + item.id)
+    .then(() => {
+      refresh()
+    })
+}
+
+watch(player, () => {
+  refresh()
+})
+
+watch(states, () => {
+  refresh()
+})
+
+function refresh() {
+  search.value = String(Date.now())
+}
 
 </script>
 

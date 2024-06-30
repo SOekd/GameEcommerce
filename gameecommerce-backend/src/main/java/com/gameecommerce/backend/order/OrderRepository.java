@@ -1,5 +1,6 @@
 package com.gameecommerce.backend.order;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDateTime;
@@ -11,8 +12,16 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
 
     Optional<Order> findOrderByLink(String link);
 
-    List<Order> findAllByOrderStageAndExpirationBefore(OrderStage orderStage, LocalDateTime expiration);
+    List<Order> findAllByStateAndExpirationBefore(OrderState state, LocalDateTime expiration);
 
-    List<Order> findAllByOrderStage(OrderStage orderStage);
+    List<Order> findAllByState(OrderState state);
+
+    List<Order> findAllByStateIn(List<OrderState> states, Pageable pageable);
+
+    long countAllByStateIn(List<OrderState> stages);
+
+    List<Order> findAllByPlayerNameLikeAndStateIn(String playerName, List<OrderState> states, Pageable pageable);
+
+    long countAllByPlayerNameLikeAndStateIn(String playerName, List<OrderState> states);
 
 }

@@ -16,7 +16,6 @@ public class SecurityController {
 
     @PostMapping("/login")
     public ResponseEntity<AuthenticationResponse> login(@RequestBody AuthenticationRequest authenticationRequest) {
-        System.out.println("Request: " + authenticationRequest);
         return ResponseEntity.ok(securityService.authenticate(authenticationRequest));
     }
 

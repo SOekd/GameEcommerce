@@ -12,6 +12,23 @@
         <v-skeleton-loader type="table-row@5"></v-skeleton-loader>
       </template>
 
+      <template v-slot:item.actions="{ item }">
+
+        <v-container>
+          <v-row class="align-center justify-center">
+            <v-btn
+              color="error"
+              variant="flat"
+              @click="deleteUser(item)"
+            >
+              DELETAR
+            </v-btn>
+          </v-row>
+        </v-container>
+
+      </template>
+
+
       <template v-slot:top>
         <v-toolbar class="px-4">
           <v-toolbar-title>Usuários</v-toolbar-title>
@@ -84,18 +101,6 @@ const headers = ref([
     key: 'username'
   },
   {
-    title: 'email',
-    align: 'start',
-    sortable: true,
-    key: 'email'
-  },
-  {
-    title: 'cargos',
-    align: 'start',
-    sortable: true,
-    key: 'roles'
-  },
-  {
     title: 'ações',
     align: 'center',
     sortable: false,
@@ -116,6 +121,14 @@ const fetchUsers = async () => {
   });
 };
 
+
+function deleteUser(id) {
+  httpService.delete(`users/${id}`).then(() => {
+    fetchUsers()
+  }).catch(error => {
+    console.error('Erro ao deletar usuário:', error);
+  });
+}
 
 onMounted(fetchUsers)
 

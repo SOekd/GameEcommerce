@@ -127,8 +127,6 @@ function postOrder() {
 
   const products = new Map();
 
-  console.log("Selected: " + JSON.stringify(props.selected))
-
   props.selected.forEach(product => {
     products.set(product.id, product.amount)
   })
@@ -138,7 +136,6 @@ function postOrder() {
     products: Object.fromEntries(products)
   })).then(response => {
 
-    console.log("Response: ", response)
     loading.value = false
 
     link.value = "http://localhost:3000/pay/" + response.data.link

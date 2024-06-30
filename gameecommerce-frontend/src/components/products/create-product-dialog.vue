@@ -163,12 +163,11 @@ function postProduct() {
   loading.value = true
   httpService.post('products', JSON.stringify({
     name: creatingProduct.name,
-    price: (creatingProduct.price * 100).toFixed(0),
+    price: creatingProduct.price,
     description: creatingProduct.description,
     servers: creatingProduct.servers
   })).then(response => {
 
-    console.log("Response: ", response)
     dialog.value = false
     alert.value = false
     loading.value = false

@@ -32,8 +32,6 @@ public class Product {
     @PositiveOrZero
     private int price;
 
-    private byte[] image;
-
     @ElementCollection(fetch = FetchType.EAGER)
     @NotNull
     private List<String> servers;

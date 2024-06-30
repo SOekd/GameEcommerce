@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -24,10 +23,15 @@ public class OrderController {
     public ResponseEntity<Order> findById(@PathVariable String link) {
         return ResponseEntity.ok(orderService.getOrderByLink(link));
     }
-    @GetMapping("/delivery")
-    public ResponseEntity<List<Order>> getAllDelivery() {
-        return ResponseEntity.ok(orderService.getAllToDeliver());
+
+    @PostMapping("/search")
+    public ResponseEntity<OrderSearchResponse> search(@RequestBody OrderSearchRequest request) {
+        return ResponseEntity.ok(orderService.search(request));
     }
 
+    @PutMapping("/deliver/{id}")
+    public ResponseEntity<Order> deliver(@PathVariable UUID id) {
+        return ResponseEntity.ok(orderService.deliver(id));
+    }
 
 }

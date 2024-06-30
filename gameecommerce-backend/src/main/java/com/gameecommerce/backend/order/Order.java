@@ -1,6 +1,6 @@
 package com.gameecommerce.backend.order;
 
-import com.gameecommerce.backend.gateway.GatewayPayment;
+import com.gameecommerce.backend.gateway.PaymentGateway;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.*;
@@ -29,7 +29,7 @@ public class Order {
 
     @Enumerated(EnumType.STRING)
     @Setter(AccessLevel.PRIVATE)
-    private OrderStage orderStage;
+    private OrderState state;
 
     private String playerName;
 
@@ -39,16 +39,13 @@ public class Order {
     private LocalDateTime expiration;
 
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    private GatewayPayment gatewayPayment;
+    private PaymentGateway paymentGateway;
 
     @PositiveOrZero
-    private int price;
+    private double price;
 
-    @PositiveOrZero
-    private int discount;
-
-    public void changeState(OrderStage orderStage) {
-        this.orderStage = orderStage;
+    public void changeState(OrderState state) {
+        this.state = state;
     }
 
 }

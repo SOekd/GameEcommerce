@@ -30,4 +30,10 @@ public class OrderExceptionHandler {
         return ExceptionResponseUtil.buildResponseEntity(HttpStatus.BAD_REQUEST, exception);
     }
 
+    @ExceptionHandler(InvalidDeliverException.class)
+    public ResponseEntity<ExceptionResponse> handleInvalidDeliverException(InvalidDeliverException exception) {
+        return ExceptionResponseUtil.buildResponseEntity(HttpStatus.BAD_REQUEST, exception);
+    }
+
+
 }
