@@ -158,7 +158,7 @@ const loadOrder = async () => httpService.get('orders/' + route.params.id).then(
     router.push('/pay/not-found')
   })
 
-await loadOrder()
+loadOrder()
 
 let intervalId = setInterval(loadOrder, 2000);
 

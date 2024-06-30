@@ -15,7 +15,7 @@ class AuthenticationService {
   async authenticate(username, password) {
     return httpService.post("/auth/login", JSON.stringify({ username: username, password: password }))
       .then(response => {
-        Cookies.set("jwt", response.data.token);
+        Cookies.set("jwt", response.data.token, { expires: 1 });
         return true;
       })
       .catch(() => {
