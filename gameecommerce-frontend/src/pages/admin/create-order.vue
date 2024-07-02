@@ -75,6 +75,7 @@
             :model-value=1
             inset
             variant="outlined"
+            v-model="item.amount"
           >
           </v-number-input>
 
@@ -143,6 +144,8 @@ const parseSelected = () => {
 
     currentProducts.push(product)
   }
+
+  console.log("selected", currentProducts)
 
   return currentProducts
 }

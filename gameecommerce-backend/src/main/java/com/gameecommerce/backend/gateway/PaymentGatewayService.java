@@ -5,7 +5,7 @@ import org.jetbrains.annotations.Nullable;
 
 public interface PaymentGatewayService {
 
-    PaymentGateway createPayment(String link, String player, long price);
+    PaymentGateway createPayment(String link, String player, double price);
 
     @Nullable
     OrderState getStage(String id);

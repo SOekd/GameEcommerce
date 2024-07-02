@@ -30,7 +30,7 @@ public class Product {
 
     // in cents
     @PositiveOrZero
-    private int price;
+    private double price;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @NotNull

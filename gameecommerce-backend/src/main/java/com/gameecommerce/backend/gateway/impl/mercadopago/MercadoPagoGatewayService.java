@@ -28,7 +28,7 @@ import java.util.UUID;
 public class MercadoPagoGatewayService implements PaymentGatewayService {
 
     @Override
-    public PaymentGateway createPayment(String link, String player, long price) {
+    public PaymentGateway createPayment(String link, String player, double price) {
         MercadoPagoConfig.setAccessToken(getAccessToken());
 
         PaymentClient paymentClient = new PaymentClient();

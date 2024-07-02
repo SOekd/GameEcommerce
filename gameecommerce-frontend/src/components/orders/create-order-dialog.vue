@@ -131,6 +131,7 @@ function postOrder() {
     products.set(product.id, product.amount)
   })
 
+  console.log("Products: ", Object.fromEntries(products))
   httpService.post('orders', JSON.stringify({
     playerName: creatingProduct.name,
     products: Object.fromEntries(products)
@@ -148,6 +149,7 @@ function postOrder() {
       console.error("Error: ", error.message)
       loading.value = false
       alert.value = true
+      link.value = ''
 
     })
 }

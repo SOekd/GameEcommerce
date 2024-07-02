@@ -73,7 +73,7 @@ public class OrderServiceImpl implements OrderService {
                 .toList();
 
         String link = generateUniqueLink();
-        int totalPrice = calculateTotalPrice(orderProducts);
+        double totalPrice = calculateTotalPrice(orderProducts);
 
         val gatewayPayment = mercadoPagoGatewayService.createPayment(link, orderCreateRequest.getPlayerName(), totalPrice);
 
@@ -145,9 +145,9 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.save(order);
     }
 
-    private int calculateTotalPrice(List<OrderProduct> products) {
+    private double calculateTotalPrice(List<OrderProduct> products) {
         return products.stream()
-                .mapToInt(orderProduct -> orderProduct.getProduct().getPrice() * orderProduct.getAmount())
+                .mapToDouble(orderProduct -> orderProduct.getProduct().getPrice() * orderProduct.getAmount())
                 .sum();
     }
 
